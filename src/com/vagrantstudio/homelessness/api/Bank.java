@@ -1,0 +1,24 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+package com.vagrantstudio.homelessness.api;
+
+/**
+ *
+ * @author BergStudio
+ */
+public interface Bank extends Visual, Unique{
+    
+    public abstract double getBalance();
+    
+    public abstract void setBalance(double paramDouble);
+    
+    public abstract void deposit(double paramDouble);
+    
+    public abstract boolean withdraw(double paramDouble);
+    
+    public abstract void clear();
+}

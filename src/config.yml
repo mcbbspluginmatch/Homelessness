@@ -1,0 +1,77 @@
+Chat:
+    format: "&f<&a%player&f> %message"
+Friend:
+Guild:
+    DefaultMaxPlayer: 10
+    Upgrade:
+        Player: 5
+        Bank: 5000
+    DefaultLevel:
+        - invite_player
+    PermissionSet:
+        GuildManager: "edit_guild_settings"
+        Upgrade: "upgrade"
+        Broadcast: "broadcast"
+        Kick: "kick_player"
+        Invite: "invite_player"
+        Dissolve: "dissolve"
+    Cost:
+        Create: 100000
+Bank:
+    Sync: Vault
+Ware:
+    Unlock_Cost: 500
+Party:
+    Max_Player: 8
+Block:
+    DisableBreak: true
+    UnlimitedResource: true
+    ResourceRespawnTime:
+        - GOLD_ORE=15
+        - IRON_ORE=10
+        - DIAMOND_ORE=45
+        - COAL_ORE=3
+        - REDSTONE_ORE=8
+        - LAPIS_ORE=8
+        - EMERALD_ORE=120
+        - WOOD=5
+PressShiftToPickup: true
+ActionTips: 
+    Pickup: true
+    Break: false
+    Fight: false
+Level:
+    - 10
+    - 50
+    - 200
+    - 500
+    - 1000
+    - 1800
+    - 3000
+    - 5500
+    - 8500
+    - 12500
+    - 18000
+    - 24000
+    - 35000
+    - 50000
+    - 70000
+    - 100000
+    - 150000
+    - 220000
+    - 300000
+    - 400000
+    - 550000
+    - 680000
+    - 850000
+    - 1100000
+    - 1400000
+    - 1700000
+    - 2000000
+    - 2500000
+    - 3000000
+    - 3500000
+    - 4000000
+    - 4500000
+    - 5000000
+    

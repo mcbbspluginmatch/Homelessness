@@ -1,0 +1,57 @@
+CommandHelp:
+- "§8§m-----------------[§d§l Homelessness §8§m]-----------------"
+- "§8┣ §a<> 多选一"
+- "§8┣ §a[] 选填"
+- "§8┣ §a() 必填"
+- "§8§m-----------------[§d§l Homelessness §8§m]-----------------"
+- "§8┣ §7> §a/homelessness §7< 打开插件帮助"
+Message:
+    Prefix:
+        Area: "§d领地 &7>> "
+        Chat: "&c聊天 &7>> "
+        Friend: "&b好友 &7>> "
+        Guild: "&c公会 &7>> "
+        Bank: "&a账户 &7>> "
+        Ware: "&6仓库 &7>> "
+        Party: "&a组队 &7>> "
+        Risker: "&5玩家 &7>> "
+        Task: "&5任务 &7>> "
+    Risker:
+        PlayerNotFound: "&c玩家 &7%player% &c不存在，请检查玩家名是否有误"
+    Area:
+        Create:
+            NeedTwoPoint: "&c你需要先选取两个点才能创建领地"
+            NoEditor: "&c你还没有开始创建领域"
+            Overlay: "&c与其它领地重叠"
+            NotOwned: "&c你还没有为这个领地选择所有者"
+            UnableChooseOwner: "&c目前领地创建器的设定不允许你设置所有者"
+            Success: "&a创建成功"
+            SetPlayerOwner: "&a设置成功，领域的新所有者是 &7%player_name"
+            SetGuildOwner: "&a设置成功，领域的新所有者是 &7%guild_name"
+        Remove: "&a领域已经成功移除"
+    Friends:
+        AddFriend: "&a请在聊天框输入玩家ID或者右键一名玩家"
+        CannotAddSelf: "&c你不能添加你自己为好友"
+    Party:
+        Search: "&a在聊天框输入组队名以查找组队"
+        Create: "&a在聊天框输入组队名以创建组队 &7(如果已有同名队伍则无法创建)"
+        SameName: "&c已有同名组队"
+        CreateSuccess: "&a创建成功"
+        NoResult: "&c没有找到该组队"
+        JoinSuccess: "&a已加入该组队"
+        AlreadyJoinedOtherParty: "&c你已经加入了其它队伍"
+        TargetOffline: "&c操作失败，因为对方已经离线"
+        Convene: "&a队伍召集令已经成功发出"
+        PlayerJoin: "&a玩家 &7%name &a加入了组队"
+        Invite: "&a你被邀请加入 &7%name &a组队，打开抬头菜单以确认或拒绝"
+        CaptainOnly: "&c这个操作只有队长可用"
+        BeConvened: "&a你被召集到队长处"
+    Task:
+        AlreadyReciveOtherTask: "&c你已经接取了 &7%name &a任务"
+        ReciveTask: "&a已接取该任务"
+        Complete: "&a任务已完成，奖励已发放"
+        BreakOff: "&c任务已中断，放弃任务"
+Inventory:
+    Title: "&c菜单"
+Scoreboard:
+    Task: "&a任务信息"

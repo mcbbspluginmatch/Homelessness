@@ -1,0 +1,7 @@
+main: com.vagrantstudio.homelessness.Homelessness
+name: Homelessness
+version: 0.0.3
+softdepend: [Vault, PlayerPoints, PlaceholderAPI, ProtocolLib, MythicMobs, Multiverse-Core]
+
+commands:
+    homelessness:
