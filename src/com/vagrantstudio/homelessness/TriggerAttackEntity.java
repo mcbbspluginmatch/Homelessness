@@ -73,7 +73,6 @@ public class TriggerAttackEntity extends Trigger {
     @Override
     public void register() {
         Homelessness.core.getEventScheduler().registerTrigger(EntityDamageByEntityEvent.class, this);
-        mission.updateTip(name == null ? "§a攻击 §7" + times + " §a次 " + type.toString().toLowerCase() : "§a攻击名为 §7" + name + " §a的 " + type.toString().toLowerCase() + " " + times + " §a次");
         tips();
     }
 

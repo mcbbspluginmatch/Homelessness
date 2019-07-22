@@ -5,6 +5,7 @@
  */
 package com.vagrantstudio.homelessness;
 
+import com.google.common.collect.Lists;
 import com.vagrantstudio.homelessness.api.Bank;
 import com.vagrantstudio.homelessness.api.ChatChannel;
 import com.vagrantstudio.homelessness.api.Guild;
@@ -26,7 +27,6 @@ import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -36,28 +36,30 @@ import org.bukkit.inventory.ItemStack;
  *
  * @author Retr0
  */
-public class PixelGuild implements Guild {
+public final class PixelGuild implements Guild {
 
     protected static List<String> flags = Arrays.asList(new String[]{"container", "use", ""});
     protected static String prefix = PixelConfiguration.lang.getString("Message.Prefix.Guild").replace("&", "§");
 
     private String localString = "§4§lunnamed or unknown name"; //公会名
-    private String localString0 = "default"; //默认权限等级
     private OfflinePlayer localOfflinePlayer; //所有者
-    private List<OfflinePlayer> localOfflinePlayerList = new ArrayList(); //申请列表
+    private List<UUID> localUniqueIdList = new ArrayList(); //申请列表
     protected List<String> localStringList = new ArrayList(); //公会公告
-    private Map<UUID, String> localPlayerMap = new HashMap(); //公会玩家 K=玩家UUID V=权限等级
-    private Map<String, List<String>> localMap = new HashMap<>(); //权限详情 K=权限等级 V=权限列表
-    private ItemStack localItemStack; //公会图标
+    private Map<UUID, Grade> localPlayerMap = new HashMap(); //公会玩家 K=玩家UUID V=权限等级
     private UUID localUniqueId = UUID.randomUUID(); //公会UUID
     private ChatChannel localChatChannel; //公会频道
     private Set<UUID> localAreaSet = new HashSet(); //公会领地
+    private int level = 0;
+    private Material icon;
 
     protected static final File localFile = new File("plugins/Homelessness/Guild");
     protected static final Map<UUID, Guild> localGuildMap = new HashMap<>(); //UUID 是公会ID Guild 是公会实例
-    protected static final Inventory localInventory = Bukkit.createInventory(null, 9, "§c公会系统功能操作");
-    protected static final ItemStack DISSOLVE = new CraftItemStack(Material.BARRIER, "§c解散公会").create();
-    protected static final ItemStack BROADCAST = new CraftItemStack(Material.CAKE, "§a公会广播").create();
+    
+    protected static final ItemStack dissolve = new CraftItemStack(Material.BARRIER, "§c解散公会").create();
+    protected static final ItemStack broadcast = new CraftItemStack(Material.CAKE, "§a公会广播").create();
+    protected static final ItemStack transfer = new CraftItemStack(Material.WOODEN_DOOR, "§a转让公会").create();
+    protected static final ItemStack member = new CraftItemStack(Material.SKULL_ITEM, (short) 3, "§a管理成员", new String[]{"§a左键授权§7/§c右键踢出"}).create();
+    protected static final ItemStack upgrade = new CraftItemStack(Material.DIAMOND_BLOCK, "§a升级公会", new String[]{"§7增加人数上限 +2"}).create();
 
     static {
         localFile.mkdirs();
@@ -68,8 +70,8 @@ public class PixelGuild implements Guild {
             }
         }
     }
-    
-    protected static Guild forUniqueId(UUID paramUniqueId){
+
+    protected static Guild forUniqueId(UUID paramUniqueId) {
         return localGuildMap.get(paramUniqueId);
     }
 
@@ -81,8 +83,8 @@ public class PixelGuild implements Guild {
         }
         return null;
     }
-    
-    public static void dissolve(UUID paramUniqueId){
+
+    public static void dissolve(UUID paramUniqueId) {
         Guild guild = localGuildMap.get(paramUniqueId);
         guild.broadcast("§c会长确认了解散公会，§7" + guild.getName() + "§c公会被解散了");
         Set<UUID> players = guild.getPlayers().keySet();
@@ -154,62 +156,35 @@ public class PixelGuild implements Guild {
         Set<String> keys = configuration.getKeys(false);
         localString = configuration.getString("Name");
         localOfflinePlayer = Bukkit.getOfflinePlayer(UUID.fromString(configuration.getString("Owner")));
-        localString0 = configuration.getString("Permission.Default");
-        ConfigurationSection cs = configuration.getConfigurationSection("Permission.Levels");
-        if (cs != null) {
-            cs.getKeys(false).stream().forEach((paramString) -> {
-                localMap.put(paramString, cs.getStringList("Permission.Levels." + paramString));
-            });
-        }
         List<String> membersKeyList = configuration.getStringList("Members");
-        for (String paramString : membersKeyList) {
-            String[] array = paramString.split(",");
-            if (array.length != 2) {
-                throw new IllegalArgumentException("§c在公会 " + localString + " §c的文件中读取玩家数据第 §e"
-                        + membersKeyList.indexOf(paramString) + " §c时发生错误，以 \'|\' 为标识符分析数组时遇到了数组长度不对等的错误");
-            } else {
-                localPlayerMap.put(UUID.fromString(array[0]), array[1]);
-            }
-        }
         localUniqueId = UUID.fromString(configuration.getString("UniqueId"));
         localChatChannel = new PixelChatChannel(localString, localUniqueId);
+        configuration.getStringList("Members").stream().forEach((paramString) -> {
+            String[] array = paramString.split(",");
+            localPlayerMap.put(UUID.fromString(array[0]), Grade.valueOf(array[1]));
+        });
         PixelWareCollection.localWareCollectionMap.put(localUniqueId,
                 configuration.contains("Ware") ? new PixelWareCollection(configuration.getConfigurationSection("Ware"), localUniqueId) : new PixelWareCollection(localUniqueId));
-        PixelBank.localMap.put(localUniqueId, new PixelBank(localUniqueId, configuration.getDouble("Bank")));
+        PixelBank.setBank(localUniqueId, new PixelBank(localUniqueId, configuration.getDouble("Bank")));
         configuration.getStringList("Areas").stream().forEach((paramString) -> {
             localAreaSet.add(UUID.fromString(paramString));
         });
         localStringList = configuration.getStringList("Manifesto");
-        List<String> listString = new ArrayList();
-        listString.add("§a公会名 §7>> " + localString);
-        listString.add("§a所有者 §7>> " + localOfflinePlayer.getName());
-        listString.add("§a宣言 §7>>--------------------");
-        if(localStringList.isEmpty()){
-            listString.add("§7这个公会没有任何宣言");
-        } else {
-            localStringList.addAll(localStringList);
-        }
-        localItemStack = Homelessness.core.getReflection().set(new CraftItemStack(Material.valueOf(configuration.getString("Icon.Material").toUpperCase()), "§a公会",
-                listString.toArray(new String[]{})).create(), "uid", localUniqueId.toString());
+        icon = Material.valueOf(configuration.getString("Icon.Material"));
+        
     }
 
     protected PixelGuild(String paramString, Player paramPlayer) {
         localString = paramString;
         localOfflinePlayer = paramPlayer;
-        localPlayerMap.put(paramPlayer.getUniqueId(), localString0);
-
-        List<String> perms = new ArrayList();
-        PixelConfiguration.option.getStringList("Guild.DefaultPermissions").stream().forEach(perms::add);
-        localMap.put("default", perms);
+        localPlayerMap.put(paramPlayer.getUniqueId(), Grade.CAPTAIN);
     }
 
     protected PixelGuild(String paramString, Player paramPlayer, UUID paramUniqueId) {
         this(paramString, paramPlayer);
         localUniqueId = paramUniqueId;
-        localItemStack = Homelessness.core.getReflection().set(new CraftItemStack(Material.IRON_SWORD, "§a公会",
-                new String[]{"§a公会名 §7>> " + localString,
-                    "§a所有者 §7>> " + localOfflinePlayer.getName(), "§a宣言 §7>>--------------------", "§7这个公会没有任何宣言"}).create(), "uid", localUniqueId.toString());
-        PixelBank.localMap.put(localUniqueId, new PixelBank(localUniqueId));
+        icon = Material.IRON_SWORD;
+        PixelBank.setBank(localUniqueId, new PixelBank(localUniqueId));
         PixelWareCollection.localWareCollectionMap.put(localUniqueId, new PixelWareCollection(localUniqueId));
         localChatChannel = new PixelChatChannel(paramString, localUniqueId);
     }
@@ -217,13 +192,13 @@ public class PixelGuild implements Guild {
     @Override
     public void add(Player paramPlayer) {
         if (PixelGuild.forPlayer(paramPlayer) == null) {
-            localPlayerMap.put(paramPlayer.getUniqueId(), localString0);
+            localPlayerMap.put(paramPlayer.getUniqueId(), Grade.MEMBER);
         }
     }
 
     @Override
     public void remove(Player paramPlayer) {
-        localOfflinePlayerList.remove(paramPlayer);
+        localPlayerMap.remove(paramPlayer.getUniqueId());
     }
 
     @Override
@@ -232,18 +207,8 @@ public class PixelGuild implements Guild {
     }
 
     @Override
-    public void refresh() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
     public ChatChannel getChatChannel() {
         return localChatChannel;
-    }
-
-    @Override
-    public void reloadChatChannel() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
@@ -268,22 +233,28 @@ public class PixelGuild implements Guild {
 
     @Override
     public Bank bank() {
-        return PixelBank.localMap.get(localUniqueId);
+        return PixelBank.forUniqueId(localUniqueId);
     }
 
     @Override
-    public Map<UUID, String> getPlayers() {
+    public Map<UUID, Grade> getPlayers() {
         return localPlayerMap;
     }
 
     @Override
-    public Map<String, List<String>> getLevels() {
-        return localMap;
-    }
-
-    @Override
     public ItemStack icon() {
-        return localItemStack;
+        List<String> listString = new ArrayList();
+        listString.add("§a公会名 §7>> " + localString);
+        listString.add("§a所有者 §7>> " + localOfflinePlayer.getName());
+        listString.add("§a人数 §7>> " + (isFull() ? "§a" : "") + localPlayerMap.size() + "§a/" + ((level * 2) + 15));
+        listString.add("§a宣言 §7>>--------------------");
+        if (localStringList.isEmpty()) {
+            listString.add("§7这个公会没有任何宣言");
+        } else {
+            listString.addAll(localStringList);
+        }
+        return Homelessness.core.getReflection().set(new CraftItemStack(icon, "§a公会",
+                listString).create(), "uid", localUniqueId.toString());
     }
 
     @Override
@@ -302,15 +273,18 @@ public class PixelGuild implements Guild {
     }
 
     @Override
-    public Inventory getOptionInterface() {
-        Inventory options = Bukkit.createInventory(null, 54, "§c§l公会选项 §a" + localString);
-        options.setItem(4, localItemStack);
-        for (int i = 9; i < 18; i++) {
-            options.setItem(i, ObjectSet.itemStackHolder);
-        }
-        options.setItem(18, new CraftItemStack(Material.DIAMOND_BLOCK, "§a扩建公会").create());
-        options.setItem(26, new CraftItemStack(Material.BARRIER, "§c解散公会").create());
-        return options;
+    public View getOptionInterface() {
+        View view = new PixelView(localUniqueId);
+        view.setItem(1, upgrade);
+        view.setItem(2, member);
+        view.setItem(3, transfer);
+        List<String> recommendation = Lists.newArrayList(localStringList);
+        recommendation.add("");
+        recommendation.add("§a左键添加§7/§c右键删除");
+        view.setItem(19, new CraftItemStack(Material.BOOK_AND_QUILL, "§a编辑公会宣言", recommendation).create());
+        view.setItem(10, new CraftItemStack(Material.CAKE, "§a管理入会申请").create());
+        view.setItem(7, dissolve);
+        return view;
     }
 
     @Override
@@ -324,7 +298,7 @@ public class PixelGuild implements Guild {
         view.setItem(1, ware().icon());
         view.setItem(2, new CraftItemStack(Material.EMERALD_BLOCK, "§a公会银行", new String[]{"§a余额 §7>> §e" + bank().getBalance()}).create());
         view.setItem(3, new CraftItemStack(Material.WOOL, (short) 14, "§a公会聊天频道", new String[]{"§a目前人数 §7>> §e" + localChatChannel.listAll().size()}).create());
-        view.setItem(4, BROADCAST);
+        view.setItem(4, broadcast);
         view.setItem(7, PixelRisker.get(localOfflinePlayer).icon());
         view.setItem(19, new CraftItemStack(Material.BARRIER, "§c退出公会").create());
         view.setItem(25, new CraftItemStack(Material.ANVIL, "§a公会选项").create());
@@ -337,34 +311,10 @@ public class PixelGuild implements Guild {
     }
 
     @Override
-    public void addManifesto(String paramString) {
-        localStringList.add(paramString);
+    public List<String> getManifesto(){
+        return localStringList;
     }
-
-    @Override
-    public void setManifesto(List<String> paramStringList) {
-        localStringList = paramStringList;
-    }
-
-    @Override
-    public void setManifesto(int paramInteger, String paramString) {
-        if (paramString == null) {
-            localStringList.remove(paramInteger);
-        } else {
-            localStringList.set(paramInteger, paramString);
-        }
-    }
-
-    @Override
-    public void clearManifesto() {
-        localStringList.clear();
-    }
-
-    @Override
-    public boolean hasPermission(Player paramPlayer, String paramString) {
-        return paramPlayer.getUniqueId().equals(localOfflinePlayer.getUniqueId()) || localMap.get(localPlayerMap.get(paramPlayer.getUniqueId())).contains(paramString);
-    }
-
+    
     @Override
     public void save(File file) {
         try {
@@ -375,16 +325,12 @@ public class PixelGuild implements Guild {
             yaml.set("Manifesto", localStringList);
             yaml.set("Owner", localOfflinePlayer.getUniqueId().toString());
             yaml.set("Bank", bank().getBalance());
-            yaml.set("Permission.Default", localString0);
-            localMap.forEach((paramString, paramStringList) -> {
-                yaml.set("Permission.Levels." + paramString, paramStringList);
-            });
             List<String> listString0 = new ArrayList<>();
-            localPlayerMap.forEach((paramUniqueId, paramString) -> {
-                listString0.add(paramUniqueId.toString() + "," + paramString);
+            localPlayerMap.forEach((paramUniqueId, paramGrade) -> {
+                listString0.add(paramUniqueId.toString() + "," + paramGrade.toString());
             });
             yaml.set("Members", listString0);
-            yaml.set("Icon.Material", localItemStack.getType().toString());
+            yaml.set("Icon.Material", icon.toString());
             yaml.set("UniqueId", localUniqueId.toString());
             yaml.set("Ware", PixelWareCollection.localWareCollectionMap.get(localUniqueId).toConfigurationSection());
             List<String> listString1 = new ArrayList<>();
@@ -401,6 +347,83 @@ public class PixelGuild implements Guild {
     @Override
     public Set<UUID> getOwnedArea() {
         return localAreaSet;
+    }
+
+    @Override
+    public Grade getGrade(OfflinePlayer paramOfflinePlayer) {
+        return localPlayerMap.get(paramOfflinePlayer.getUniqueId());
+    }
+
+    @Override
+    public void setGrade(OfflinePlayer paramOfflinePlayer, Grade paramGrade) {
+        localPlayerMap.replace(paramOfflinePlayer.getUniqueId(), paramGrade);
+    }
+
+    @Override
+    public boolean isFull() {
+        return localPlayerMap.size() == (level * 2) + 15;
+    }
+
+    @Override
+    public boolean upgrade() {
+        if (bank().getBalance() >= PixelConfiguration.option.getInt("Guild.UpgradeCost")) {
+            bank().withdraw(PixelConfiguration.option.getInt("Guild.UpgradeCost"));
+            level++;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public void apply(Player paramPlayer) {
+        if (localUniqueIdList.size() >= 36) {
+            paramPlayer.sendMessage(prefix + PixelConfiguration.getLang("Message.Guild.ApplicationFull"));
+        } else {
+            localUniqueIdList.add(paramPlayer.getUniqueId());
+            paramPlayer.sendMessage(prefix + PixelConfiguration.getLang("Message.Guild.ApplyJoinGuild"));
+        }
+    }
+
+    @Override
+    public void accpet(UUID paramUniqueId) {
+        OfflinePlayer offlineInstance = Bukkit.getOfflinePlayer(paramUniqueId);
+        localUniqueIdList.remove(paramUniqueId);
+        if (PixelGuild.forPlayer(offlineInstance) == null) {
+            localPlayerMap.put(paramUniqueId, Grade.MEMBER);
+            if (offlineInstance.isOnline()) {
+                offlineInstance.getPlayer().sendMessage(prefix + PixelConfiguration.getLang("Message.Guild.JoinGuild"));
+            }
+        }
+    }
+
+    @Override
+    public void deny(UUID paramUniqueId) {
+        OfflinePlayer offlineInstance = Bukkit.getOfflinePlayer(paramUniqueId);
+        localUniqueIdList.remove(paramUniqueId);
+        if (offlineInstance.isOnline()) {
+            offlineInstance.getPlayer().sendMessage(prefix + PixelConfiguration.getLang("Message.Guild.Deny"));
+        }
+    }
+
+    @Override
+    public List<UUID> getApplications() {
+        return localUniqueIdList;
+    }
+
+    @Override
+    public void kick(UUID paramUniqueId) {
+        if(localOfflinePlayer.getUniqueId().equals(paramUniqueId)) return;
+        if(localPlayerMap.containsKey(paramUniqueId)){
+            localPlayerMap.remove(paramUniqueId);
+            OfflinePlayer offlineInstance = Bukkit.getOfflinePlayer(paramUniqueId);
+            if(offlineInstance.isOnline()){
+                Player player = offlineInstance.getPlayer();
+                PixelView.removeView(player, "§a公会", "§a公会选项", "§a入会申请列表", "§公会银行", "§a仓库储集", "§a仓库");
+                localChatChannel.remove(player);
+                player.sendMessage(prefix + PixelConfiguration.getLang("Message.Guild.Kicked").replace("%name", localString));
+            }
+        }
     }
 
 }

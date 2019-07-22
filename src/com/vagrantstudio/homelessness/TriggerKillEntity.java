@@ -31,7 +31,8 @@ public class TriggerKillEntity extends Trigger {
     private int times = 1, now = 0, taskId = -1;
     private String name = null;
     
-    public TriggerKillEntity(String[] array){
+    public TriggerKillEntity(String[] array, Mission mission){
+        this.mission = mission;
         type = EntityType.valueOf(array[1]);
         times = Integer.valueOf(array[2]);
         name = array[3];

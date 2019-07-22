@@ -10,9 +10,11 @@ package com.vagrantstudio.homelessness.api;
  *
  * @author BergStudio
  */
-public interface Experience extends Visual, Freezable{
+public interface Experience extends Visual{
     
     public void setExp(int paramInteger);
+    
+    public void addExp(int paramInteger);
     
     public int getExp();
     

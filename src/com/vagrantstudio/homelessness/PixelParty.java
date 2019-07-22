@@ -260,4 +260,5 @@ public class PixelParty implements Party {
     public UUID getUniqueId() {
         return localUniqueId;
     }
+
 }

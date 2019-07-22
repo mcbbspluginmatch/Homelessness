@@ -35,6 +35,7 @@ public class PixelTask implements Task {
     protected static Map<String, Task> localTaskMap = new HashMap();
     protected static Map<UUID, TaskSnapshot> taskSnapshotMap = new ConcurrentHashMap();
     protected static Map<OfflinePlayer, List<String>> localCompletedTaskMap = new HashMap();
+    protected static ItemStack cancelTask = new CraftItemStack(Material.BARRIER, "§c放弃任务").create();
 
     private String localString;
     private List<String> localRecommendation;
@@ -52,6 +53,10 @@ public class PixelTask implements Task {
     }
 
     protected static void startTask(String paramString, Player paramPlayer) {
+        if(PixelInstanceZone.forPlayer(paramPlayer) != null){
+            paramPlayer.sendMessage(prefix + PixelConfiguration.getLang("Message.Task.InZone"));
+            return;
+        }
         if (localTaskMap.containsKey(paramString)) {
             Party party = PixelParty.forPlayer(paramPlayer);
             if(party == null) startTask(localTaskMap.get(paramString), paramPlayer); else startTask(localTaskMap.get(paramString), party);
@@ -91,6 +96,12 @@ public class PixelTask implements Task {
         }
         putSnapshot(paramPlayer, new TaskSnapshot(paramTask, paramPlayer));
         paramPlayer.sendMessage(prefix + PixelConfiguration.getLang("Message.Task.ReciveTask"));
+    }
+    
+    public static void cancelTask(Set<Player> paramPlayerSet){
+        paramPlayerSet.stream().forEach((paramPlayer) -> {
+            taskSnapshotMap.remove(paramPlayer.getUniqueId());
+        });
     }
 
     private PixelTask(File file) {

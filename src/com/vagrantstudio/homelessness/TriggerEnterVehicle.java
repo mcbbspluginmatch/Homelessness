@@ -68,7 +68,6 @@ public class TriggerEnterVehicle extends Trigger {
     @Override
     public void register() {
         Homelessness.core.getEventScheduler().registerTrigger(VehicleEnterEvent.class, this);
-        mission.updateTip(name == null ? "§a骑上 §7" + type.toString() : "§a骑上名为 §7" + name + " §a的 §7" + type.toString() + " §a载具");
         tips();
     }
 

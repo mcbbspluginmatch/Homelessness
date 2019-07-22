@@ -5,8 +5,6 @@
  */
 package com.vagrantstudio.homelessness;
 
-import java.util.HashMap;
-import java.util.Map;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;

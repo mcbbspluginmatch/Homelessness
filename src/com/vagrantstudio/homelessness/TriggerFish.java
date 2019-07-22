@@ -61,7 +61,6 @@ public class TriggerFish extends Trigger{
     @Override
     public void register() {
         Homelessness.core.getEventScheduler().registerTrigger(PlayerFishEvent.class, this);
-        mission.updateTip("§a钓 §7" + times + " §a只鱼");
         tips();
     }
 

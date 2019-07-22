@@ -18,6 +18,33 @@ Message:
         Task: "&5任务 &7>> "
     Risker:
         PlayerNotFound: "&c玩家 &7%player% &c不存在，请检查玩家名是否有误"
+    Guild:
+        InputGuildName: "&a请输入公会名称 &7(可以带彩色符号&)"
+        CannotDissolve: "&c你是这个公会的所有者，你只能解散该公会而不能退出"
+        NoPerm: "&c未授权使用"
+        Broadcast: "&a请在聊天栏内输入要广播的内容"
+        UpgradeSuccess: "&a公会升级成功"
+        UpgradeFailed: "&c公会升级失败"
+        ApplyJoinGuild: "&a你已经成功提交入会申请"
+        ApplicationFull: "&c该公会的入会申请已经满人了"
+        JoinGuild: "&a你已经成功加入了 &7%name &a公会"
+        Kicked: "&c你被公会踢出，你不再是 &7%name &c公会的成员了"
+        CannotKickOwner: "&c你不能踢出会长"
+        Deny: "&c公会 &7%name &c拒绝了你的入会申请"
+        CannotSetCaptain: "&c你不能设置会长的权限"
+        SetToMember: "&7[&b副会长&7] &7%name &a已经被设置为 &7[&a成员&7]"
+        SetToViceCaptain: "&7[&a成员&7] &7%name &a已经被设置为 &7[&b副会长&7]"
+        AddManifesto: "&a请在聊天栏直接键入要添加的宣言 &7(可以带彩色符号&)"
+        Deposit: "&a你向公会捐献了 &7%value &a元"
+        Withdraw: "&a你从公会中取出了 &7%value &a元"
+        NotEnoughMoney: "&c公会余额不足"
+    ChatChannel:
+        InputChannelName: "&a请输入聊天频道名称 &7(可以带彩色符号&)"
+        NotOwner: "&c你不是频道所有者"
+    Bank:
+        NotEnoughMoney: "&c你没有足够的钱"
+        InputValue: "&a请输入金额"
+        NotANumber: "&c这不是一个数字"
     Area:
         Create:
             NeedTwoPoint: "&c你需要先选取两个点才能创建领地"
@@ -29,9 +56,13 @@ Message:
             SetPlayerOwner: "&a设置成功，领域的新所有者是 &7%player_name"
             SetGuildOwner: "&a设置成功，领域的新所有者是 &7%guild_name"
         Remove: "&a领域已经成功移除"
+        InputAreaName: "§a请输入领地名称 §7(可以带彩色符号&)"
     Friends:
         AddFriend: "&a请在聊天框输入玩家ID或者右键一名玩家"
         CannotAddSelf: "&c你不能添加你自己为好友"
+        AcceptApplication: "&a你接受了来自 &7%name &a的好友申请"
+        PlayerAcceptYourApplication: "&a玩家 &7%name &a接受了你的好友申请"
+        BeFriend: 
     Party:
         Search: "&a在聊天框输入组队名以查找组队"
         Create: "&a在聊天框输入组队名以创建组队 &7(如果已有同名队伍则无法创建)"
@@ -51,6 +82,9 @@ Message:
         ReciveTask: "&a已接取该任务"
         Complete: "&a任务已完成，奖励已发放"
         BreakOff: "&c任务已中断，放弃任务"
+        InZone: "&c你在一个副本中，所以你不能接取任务"
+    Ware:
+        CreateSuccess: "&a创建成功！编号位为 &e%slot &a的储存槽现在有了一个空仓库"
 Inventory:
     Title: "&c菜单"
 Scoreboard:

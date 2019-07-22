@@ -29,6 +29,4 @@ public interface Mission {
     
     public World getWorld();
     
-    public void updateTip(String tip);
-    
 }

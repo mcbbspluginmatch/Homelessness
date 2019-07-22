@@ -36,7 +36,7 @@ import org.bukkit.inventory.ItemStack;
  *
  * @author Retr0
  */
-public class PixelRisker implements Risker {
+public final class PixelRisker implements Risker {
 
     private Combat localCombat = Combat.STANDARD; //玩家战斗状态
     private Experience localExperience; //玩家经验槽
@@ -64,12 +64,9 @@ public class PixelRisker implements Risker {
 
     protected PixelRisker(File paramFile) {
         YamlConfiguration yaml = YamlConfiguration.loadConfiguration(paramFile);
-        
-        localExperience = yaml.contains("Experience") ? new PixelExperience(yaml.getInt("Experience")) : new PixelExperience();
         localUniqueId = UUID.fromString(yaml.getString("UniqueId"));
         OfflinePlayer offlineInstance = Bukkit.getOfflinePlayer(localUniqueId);
-        if(PixelBank.sync == PixelBank.Sync.LOCAL)
-                PixelBank.localMap.put(localUniqueId, yaml.contains("Bank") ? new PixelBank(localUniqueId, yaml.getDouble("Bank")) : new PixelBank(localUniqueId));
+        localExperience = new PixelExperience(yaml.getInt("Experience"), yaml.getInt("Level"), offlineInstance);
         localFriends = new PixelFriends(yaml.getStringList("Friends"), localUniqueId);
         yaml.getStringList("Arenas").stream().forEach((paramString) -> {
             localOwnedArea.add(UUID.fromString(paramString));
@@ -78,11 +75,9 @@ public class PixelRisker implements Risker {
     }
 
     protected PixelRisker(Player paramPlayer) {
-        localExperience = new PixelExperience();
+        localExperience = new PixelExperience(paramPlayer);
         localUniqueId = paramPlayer.getUniqueId();
         localFriends = new PixelFriends(localUniqueId);
-        if(PixelBank.sync == PixelBank.Sync.LOCAL)
-                PixelBank.localMap.put(localUniqueId, new PixelBank(localUniqueId));
         PixelTask.localCompletedTaskMap.put(paramPlayer, new ArrayList());
     }
 
@@ -103,7 +98,7 @@ public class PixelRisker implements Risker {
 
     @Override
     public Bank bank() {
-        return PixelBank.localMap.get(localUniqueId);
+        return PixelBank.forUniqueId(localUniqueId);
     }
 
     @Override
@@ -160,7 +155,7 @@ public class PixelRisker implements Risker {
         View view = new PixelView(localUniqueId);
         view.setItem(1, guild == null ? new CraftItemStack(Material.BARRIER, "§c没有公会").create() : guild.icon());
         view.setItem(2, offlinePlayer.isOnline() ? PixelChatChannel.forPlayer(offlinePlayer.getPlayer()).icon() : new CraftItemStack(Material.BARRIER, "§c玩家不在线").create());
-        view.setItem(3, PixelBank.localMap.get(localUniqueId).icon());
+        view.setItem(3, PixelBank.forUniqueId(localUniqueId).icon());
         view.setItem(4, new CraftItemStack(Material.NAME_TAG, "§a好友", new String[]{"§7有 " + localFriends.all().size() + " 位好友在你的好友列表"}).create());
         view.setItem(5, party == null ? new CraftItemStack(Material.BARRIER, "§c不在组队中").create() : party.icon());
         return view;
@@ -190,6 +185,7 @@ public class PixelRisker implements Risker {
             yaml.set("Experience", localExperience.getExp());
             yaml.set("UniqueId", localUniqueId.toString());
             yaml.set("Friends", localFriends.toList());
+            yaml.set("Level", localExperience.getLevel());
             yaml.set("CompletedTask", PixelTask.localCompletedTaskMap.get(Bukkit.getOfflinePlayer(localUniqueId)));
             yaml.save(file);
         } catch (IOException ex) {

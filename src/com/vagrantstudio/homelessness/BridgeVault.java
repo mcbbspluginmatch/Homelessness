@@ -12,10 +12,7 @@ import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Server;
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.RegisteredServiceProvider;
 
@@ -32,15 +29,6 @@ public class BridgeVault implements Listener {
         if (economyProvider != null) {
             economy = economyProvider.getProvider();
         }
-    }
-
-    @EventHandler
-    public void onPlayerLogin(PlayerLoginEvent paramPlayerLoginEvent) {
-        Player player = paramPlayerLoginEvent.getPlayer();
-        if (!economy.hasAccount(player)) {
-            economy.createPlayerAccount(player);
-        }
-        PixelBank.localMap.put(player.getUniqueId(), new VaultBank(player));
     }
 
     public boolean bankHas(OfflinePlayer paramOfflnePlayer, double value) {

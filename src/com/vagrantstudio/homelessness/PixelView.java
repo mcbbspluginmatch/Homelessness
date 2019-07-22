@@ -5,6 +5,7 @@
  */
 package com.vagrantstudio.homelessness;
 
+import com.google.common.collect.Maps;
 import com.vagrantstudio.homelessness.api.View;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -42,9 +43,10 @@ public class PixelView implements View {
         return map;
     }
     
-    private PixelView(UUID paramUniqueId, Map<Integer, ItemStack> paramItemStackMap){
+    private PixelView(UUID paramUniqueId, Map map, int paramInteger){
         localUniqueId = paramUniqueId;
-        localItemStackMap = paramItemStackMap;
+        localItemStackMap = Maps.newHashMap(map);
+        page = paramInteger;
     }
 
     protected PixelView() {
@@ -96,7 +98,7 @@ public class PixelView implements View {
 
     @Override
     public View clone() throws CloneNotSupportedException {
-        return (View) super.clone();
+        return new PixelView(localUniqueId, localItemStackMap, page);
     }
 
     @Override

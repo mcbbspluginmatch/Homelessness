@@ -83,7 +83,7 @@ public class Homelessness extends Core {
             hookVault = new BridgeVault(getServer());
             getServer().getPluginManager().registerEvents(hookVault, this);
             getLogger().info("Homelessness > Vault Hooked!");
-        }//建立插件连接
+        } else getLogger().info("Homelessness > Plugin [Vault] not found");//建立插件连接
         if (playerpoints != null) {
             hookPlayerPoints = new BridgePlayerPoints();
             getLogger().info("Homelessness > PlayerPoints Hooked!");
@@ -98,8 +98,7 @@ public class Homelessness extends Core {
             getLogger().info("Homelessness > ProtocolLib Hooked!");
         }
         if (placeholder != null) {
-            hookPlaceholderAPI = new BridgePlaceholder();
-            getLogger().info("Homelessness > PlaceholderAPI Hooked!");
+            getLogger().info("Homelessness > Something unexpected will happen if we hook PlaceholderAPI. We will fix it in next version!");
         }
         if (multiverse != null) {
             hookMultiverse = new BridgeMultiverseCore();
@@ -111,14 +110,7 @@ public class Homelessness extends Core {
         getServer().getPluginManager().registerEvents(new ListenerOfPlayer(), this);
         getServer().getPluginManager().registerEvents(new ListenerOfEntity(), this);
         getServer().getPluginManager().registerEvents(eventScheduler, this);
-
-        getServer().getOnlinePlayers().forEach((paramPlayer) -> {
-            if (!PixelRisker.localMap.containsKey(paramPlayer.getUniqueId())) {
-                PixelRisker.localMap.put(paramPlayer.getUniqueId(), new PixelRisker(paramPlayer));
-            }
-            PixelView.localMenuMap.put(paramPlayer, new HashMap<>());
-            PixelChatChannel.localChatChannel.add(paramPlayer);
-        });
+        
     }
 
     @Override

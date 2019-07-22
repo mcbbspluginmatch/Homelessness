@@ -62,7 +62,6 @@ public class TriggerMoveToLocation extends Trigger{
     @Override
     public void register() {
         Homelessness.core.getEventScheduler().registerTrigger(PlayerMoveEvent.class, this);
-        mission.updateTip("§a移动到坐标 §7x=" + location.getBlockX() + ",y=" + location.getBlockY() + ",z=" + location.getBlockZ());
         tips();
     }
 

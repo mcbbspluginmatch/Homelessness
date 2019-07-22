@@ -34,7 +34,6 @@ public class PixelChatChannel implements ChatChannel {
     protected String localString; //password
     protected String localString0; //name
     protected Access localAccess = Access.PUBLIC;
-    protected ItemStack localItemStack;
     protected UUID localUniqueId = UUID.randomUUID();
 
     protected static ItemStack create = new CraftItemStack(Material.WOOL, (short) 5, "§a创建新的频道", new String[]{"§7这会使你退出当前聊天频道", "§7如果你是频道所有者将会解散该频道"}).create();
@@ -120,19 +119,11 @@ public class PixelChatChannel implements ChatChannel {
 
     protected PixelChatChannel() {
         localString0 = "默认频道";
-        localItemStack = Homelessness.core.getReflection().set(new CraftItemStack(Material.WOOL, (short) 14, "§a聊天频道",
-                new String[]{"§a频道名 §7>> " + localString0,
-                    "§a访问权限 §7>> " + localAccess.getName(),
-                    "§a密码 §7>> " + (localBoolean ? "§a是" : "§c否")}).create(), "uid", localUniqueId.toString());
     }
 
     protected PixelChatChannel(String paramString, UUID paramUniqueId) {
         localString0 = paramString;
         localUniqueId = paramUniqueId;
-        localItemStack = Homelessness.core.getReflection().set(new CraftItemStack(Material.WOOL, (short) 14, "§a聊天频道",
-                new String[]{"§a频道名 §7>> " + localString0,
-                    "§a访问权限 §7>> " + localAccess.getName(),
-                    "§a密码 §7>> " + (localBoolean ? "§a是" : "§c否")}).create(), "uid", localUniqueId.toString());
     }
 
     protected PixelChatChannel(String paramString, Player paramPlayer, UUID paramUniqueId) {
@@ -200,10 +191,6 @@ public class PixelChatChannel implements ChatChannel {
     public void setPassword(String paramString) {
         localString = paramString;
         localBoolean = !"null".equals(localString);
-        localItemStack = Homelessness.core.getReflection().set(new CraftItemStack(Material.WOOL, (short) 14, "§a聊天频道",
-                new String[]{"§a频道名 §7>> " + localString0,
-                    "§a访问权限 §7>> " + localAccess.getName(),
-                    "§a密码 §7>> " + (localBoolean ? "§a是" : "§c否")}).create(), "vagrant:chatchannel:name", localString0);
     }
 
     @Override
@@ -229,10 +216,6 @@ public class PixelChatChannel implements ChatChannel {
     @Override
     public void setAccessLevel(Access paramAccessLevel) {
         localAccess = paramAccessLevel;
-        localItemStack = Homelessness.core.getReflection().set(new CraftItemStack(Material.WOOL, (short) 14, "§a聊天频道",
-                new String[]{"§a频道名 §7>> " + localString0,
-                    "§a访问权限 §7>> " + localAccess.getName(),
-                    "§a密码 §7>> " + (localBoolean ? "§a是" : "§c否")}).create(), "vagrant:chatchannel:name", localString0);
     }
 
     @Override
@@ -242,7 +225,10 @@ public class PixelChatChannel implements ChatChannel {
 
     @Override
     public ItemStack icon() {
-        return localItemStack;
+        return Homelessness.core.getReflection().set(new CraftItemStack(Material.WOOL, (short) 14, "§a聊天频道",
+                new String[]{"§a频道名 §7>> " + localString0,
+                    "§a访问权限 §7>> " + localAccess.getName(),
+                    "§a密码 §7>> " + (localBoolean ? "§a是" : "§c否")}).create(), "uid", localUniqueId.toString());
     }
 
     @Override
@@ -276,7 +262,7 @@ public class PixelChatChannel implements ChatChannel {
         view.setItem(1, new CraftItemStack(Material.NAME_TAG, "§a访问权限", new String[]{"§b> §a" + localAccess.getName(), "§7点击修改"}).create());
         view.setItem(2, new CraftItemStack(Material.PAPER, "§a频道密码", new String[]{"§b> §a" + localString, "§7仅频道所有者为你时有效", "§7但这不会对当前已经在频道的用户产生影响"}).create());
         view.setItem(3, new CraftItemStack(Material.SKULL_ITEM, (short) 3, "§a频道内玩家", new String[]{"§b> §a" + localPlayerList.size() + " 人在此频道中"}).create());
-        view.setItem(7, localItemStack);
+        view.setItem(7, icon());
         view.setItem(19, create);
         view.setItem(20, list);
         view.setItem(21, dissolve);

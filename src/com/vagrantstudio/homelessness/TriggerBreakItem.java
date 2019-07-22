@@ -61,7 +61,6 @@ public class TriggerBreakItem extends Trigger{
     @Override
     public void register() {
         Homelessness.core.getEventScheduler().registerTrigger(PlayerItemBreakEvent.class, this);
-        mission.updateTip(name == null ? "§a用坏一个 §7" + material.toString().toLowerCase() + " §a物品" : "§a用坏一个名为 " + name + " §a的 " + material.toString().toLowerCase());
         tips();
     }
 

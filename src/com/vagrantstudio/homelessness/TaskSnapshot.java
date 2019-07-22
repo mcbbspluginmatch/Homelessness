@@ -7,6 +7,7 @@ package com.vagrantstudio.homelessness;
 
 import com.google.common.collect.Sets;
 import com.vagrantstudio.homelessness.api.Actuator;
+import com.vagrantstudio.homelessness.api.InstanceZone;
 import com.vagrantstudio.homelessness.api.Mission;
 import com.vagrantstudio.homelessness.api.Task;
 import com.vagrantstudio.homelessness.api.Trigger;
@@ -20,14 +21,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
-import org.bukkit.scoreboard.DisplaySlot;
-import org.bukkit.scoreboard.Objective;
-import org.bukkit.scoreboard.Score;
-import org.bukkit.scoreboard.Scoreboard;
 
 /**
  *
@@ -80,7 +76,9 @@ public class TaskSnapshot implements Mission {
                 entry.getValue().stream().forEach((paramActuator) -> {
                     paramActuator.execute();
                 });
-                if(taskList.size() >= 2) taskList.get(1).getKey().register();
+                if (taskList.size() >= 2) {
+                    taskList.get(1).getKey().register();
+                }
             }
         }
     }
@@ -144,10 +142,6 @@ public class TaskSnapshot implements Mission {
         }.start();
     }
 
-    public void stop() {
-
-    }
-
     public Task.Type getType() {
         return type;
     }
@@ -156,22 +150,29 @@ public class TaskSnapshot implements Mission {
         return tip;
     }
 
-    @Override
-    public void updateTip(String tip) {
-        this.tip = tip;
-        Scoreboard board = Bukkit.getScoreboardManager().getNewScoreboard();
-        Objective obj = board.registerNewObjective("stats", "dummy");
-        obj.setDisplaySlot(DisplaySlot.SIDEBAR);
-        obj.setDisplayName(PixelConfiguration.getLang("Scoreboard.Task"));
-        Score taskName = obj.getScore("§f当前目标 §e§l> §a" + tip);
-        Score holder = obj.getScore("   ");
-        Score taskType = obj.getScore("§f任务类型 §e§l> §a" + type.getName());
-        taskName.setScore(15);
-        holder.setScore(14);
-        taskType.setScore(13);
-        playerSet.stream().forEach((paramPlayer) -> {
-            paramPlayer.setScoreboard(board);
+    public void cancel() {
+        for (Player p : playerSet) {
+            InstanceZone zone = PixelInstanceZone.forPlayer(p);
+            if (zone != null) {
+                zone.end();
+            }
+            break;
+        }
+        taskList.stream().forEach((paramEntry) -> {
+            Trigger t = paramEntry.getKey();
+            if(t != null){
+                t.unregister();
+            }
         });
+        new Thread() {
+            @Override
+            public void run() {
+                PixelTask.cancelTask(playerSet);
+                playerSet.stream().forEach((paramPlayer) -> {
+                    paramPlayer.sendMessage(PixelTask.prefix + PixelConfiguration.getLang("Message.Task.BreakOff"));
+                });
+            }
+        }.start();
     }
 
 }

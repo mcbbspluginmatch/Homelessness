@@ -36,7 +36,7 @@ public class ActuatorGiveMoney extends Actuator{
     @Override
     public void execute() {
         mission.getPlayers().stream().forEach((paramPlayer) -> {
-            Bank bank = PixelBank.localMap.get(paramPlayer.getUniqueId());
+            Bank bank = PixelBank.forUniqueId(paramPlayer.getUniqueId());
             bank.setBalance(value + bank.getBalance());
         });
     }

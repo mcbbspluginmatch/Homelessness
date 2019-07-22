@@ -26,7 +26,7 @@ import org.bukkit.inventory.ItemStack;
  *
  * @author BergStudio
  */
-public class PixelWareCollection implements WareCollection{
+public final class PixelWareCollection implements WareCollection{
     
     protected Map<Integer, Warehouse> localWareMap = new HashMap();
     protected UUID localUniqueId;

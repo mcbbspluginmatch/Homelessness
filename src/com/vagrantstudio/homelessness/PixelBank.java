@@ -5,7 +5,6 @@
  */
 package com.vagrantstudio.homelessness;
 
-import com.vagrantstudio.homelessness.BridgePlayerPoints.PointsBank;
 import com.vagrantstudio.homelessness.BridgeVault.VaultBank;
 import com.vagrantstudio.homelessness.api.Bank;
 import com.vagrantstudio.homelessness.api.util.CraftItemStack;
@@ -23,9 +22,9 @@ import org.bukkit.inventory.ItemStack;
  */
 public class PixelBank implements Bank {
 
-    protected static final Map<UUID, Bank> localMap = new HashMap();
+    private static final Map<UUID, Bank> localMap = new HashMap();
     protected static String prefix = PixelConfiguration.lang.getString("Message.Prefix.Bank").replace("&", "§");
-    protected static Sync sync = Sync.LOCAL;
+    protected static Sync sync = null;
 
     protected static ItemStack DEPOSIT = new CraftItemStack(Material.WOOL, (short) 5, "§a存款").create();
     protected static ItemStack WITHDRAW = new CraftItemStack(Material.WOOL, (short) 14, "§a取款").create();
@@ -34,22 +33,18 @@ public class PixelBank implements Bank {
     private UUID localUniqueId;
     private double localDouble = 0.0D;
 
-    static {
-        String syncStr = PixelConfiguration.option.getString("Bank.Sync").toUpperCase();
-        sync = Sync.valueOf(syncStr);
-        switch (syncStr) {
-            default:
-            case "LOCAL":
-                break;
-            case "VAULT":
-                for (OfflinePlayer paramOfflinePlayer : Bukkit.getOfflinePlayers()) {
-                    localMap.put(paramOfflinePlayer.getUniqueId(), new VaultBank(paramOfflinePlayer));
-                }   break;
-            case "PLAYERPOINTS":
-                for (OfflinePlayer paramOfflinePlayer : Bukkit.getOfflinePlayers()) {
-                    localMap.put(paramOfflinePlayer.getUniqueId(), new PointsBank(paramOfflinePlayer.getUniqueId()));
-                }   break;
+    protected static void setBank(UUID paramUniqueId, Bank paramBank) {
+        localMap.put(paramUniqueId, paramBank);
+    }
+
+    protected static Bank forUniqueId(UUID paramUniqueId) {
+        if (!localMap.containsKey(paramUniqueId)) {
+            OfflinePlayer offlineInstance = Bukkit.getOfflinePlayer(paramUniqueId);
+            if (offlineInstance.hasPlayedBefore()) {
+                localMap.put(paramUniqueId, new VaultBank(offlineInstance));
+            }
         }
+        return localMap.get(paramUniqueId);
     }
 
     protected PixelBank(UUID paramUUID) {

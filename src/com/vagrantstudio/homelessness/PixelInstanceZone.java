@@ -69,6 +69,13 @@ public class PixelInstanceZone implements InstanceZone {
             instanceZoneModelMap.put(file.getName().replace(".yml", ""), new PixelInstanceZone(file));
         }
     }
+    
+    protected static InstanceZone forPlayer(Player paramPlayer){
+        for(InstanceZone zone : zoneMap.values()){
+            if(zone.getPlayers().contains(paramPlayer)) return zone;
+        }
+        return null;
+    }
 
     protected static boolean createZone(String paramString, Area paramArea, EnterMode paramEnterMode) {
         if (paramArea == null) {
@@ -286,11 +293,6 @@ public class PixelInstanceZone implements InstanceZone {
     @Override
     public World getWorld() {
         return localArea.getWorld();
-    }
-
-    @Override
-    public void updateTip(String tip) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     protected static class MultiZone extends PixelInstanceZone {

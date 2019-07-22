@@ -176,9 +176,8 @@ public class PixelWare implements Warehouse {
         for (int i = 1; i <= (100 - scale) / 2; i++) {
             str += "§7|";
         }
-        ItemStack itemStack = new CraftItemStack(Material.WOOL, (short) (scale >= 80 ? 14 : 5),
+        return new CraftItemStack(Material.WOOL, (short) (scale >= 80 ? 14 : 5),
                 "§a仓库", new String[]{"§7本仓库已用空间 " + scale + "%", str}).create();
-        return itemStack;
     }
 
     @Override

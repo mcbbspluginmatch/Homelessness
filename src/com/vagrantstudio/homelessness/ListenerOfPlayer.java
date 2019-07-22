@@ -13,10 +13,13 @@ import com.vagrantstudio.homelessness.api.ChatChannel;
 import com.vagrantstudio.homelessness.api.Feudal;
 import com.vagrantstudio.homelessness.api.Party;
 import com.vagrantstudio.homelessness.api.Risker;
+import com.vagrantstudio.homelessness.api.Task.Type;
 import com.vagrantstudio.homelessness.api.View;
 import com.vagrantstudio.homelessness.api.util.Numeric;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -29,6 +32,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerExpChangeEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -90,14 +94,53 @@ public class ListenerOfPlayer implements Listener {
                 ObjectSet.localChatActionMap.remove(player);
             }
         });
+        localChatMap.put("增加公会宣言", new Chat() {
+            @Override
+            protected void invoke(AsyncPlayerChatEvent paramAsyncPlayerChatEvent) {
+                PixelGuild.forUniqueId(ObjectSet.localChatActionMap.get(player).getValue()).getManifesto().add(message);
+                ObjectSet.localChatActionMap.remove(player);
+            }
+        });
+        localChatMap.put("公会捐款", new Chat() {
+            @Override
+            protected void invoke(AsyncPlayerChatEvent paramAsyncPlayerChatEvent) {
+                if (Numeric.isInteger(message)) {
+                    int value = Integer.valueOf(message);
+                    if(PixelBank.forUniqueId(player.getUniqueId()).withdraw(value)){
+                        PixelGuild.forPlayer(player).bank().deposit(value);
+                        player.sendMessage(PixelGuild.prefix + PixelConfiguration.getLang("Message.Guild.Deposit").replace("%value", message));
+                    } else {
+                        player.sendMessage(PixelBank.prefix + PixelConfiguration.getLang("Message.Bank.NotEnoughMoney"));
+                    }
+                } else {
+                    player.sendMessage(PixelBank.prefix + PixelConfiguration.getLang("Message.Bank.NotANumber"));
+                }
+            }
+        });
+        localChatMap.put("公会取款", new Chat() {
+            @Override
+            protected void invoke(AsyncPlayerChatEvent paramAsyncPlayerChatEvent) {
+                if (Numeric.isInteger(message)) {
+                    int value = Integer.valueOf(message);
+                    if(!PixelGuild.forPlayer(player).bank().withdraw(value)){
+                        player.sendMessage(PixelGuild.prefix + PixelConfiguration.getLang("Message.Guild.Withdraw").replace("%value", message));
+                        PixelBank.forUniqueId(player.getUniqueId()).deposit(value);
+                    } else {
+                        player.sendMessage(PixelBank.prefix + PixelConfiguration.getLang("Message.Guild.NotEnoughMoney"));
+                    }
+                } else {
+                    player.sendMessage(PixelBank.prefix + PixelConfiguration.getLang("Message.Bank.NotANumber"));
+                }
+            }
+        });
         localChatMap.put("银行强制存款", new Chat() {
             @Override
             protected void invoke(AsyncPlayerChatEvent paramAsyncPlayerChatEvent) {
                 if (Numeric.isInteger(message)) {
-                    PixelBank.localMap.get(ObjectSet.localChatActionMap.get(player).getValue()).deposit(Integer.valueOf(message));
+                    PixelBank.forUniqueId(ObjectSet.localChatActionMap.get(player).getValue()).deposit(Integer.valueOf(message));
                     player.sendMessage(PixelBank.prefix + "§f存款已设置");
                 } else {
-                    player.sendMessage(PixelConfiguration.option.getString("Bank.Prefix").replace("&", "§") + "§c字符串不合格，请输入数字");
+                    player.sendMessage(PixelBank.prefix + PixelConfiguration.getLang("Message.Bank.NotANumber"));
                 }
             }
         });
@@ -105,12 +148,12 @@ public class ListenerOfPlayer implements Listener {
             @Override
             protected void invoke(AsyncPlayerChatEvent paramAsyncPlayerChatEvent) {
                 if (Numeric.isInteger(message)) {
-                    Bank bank = PixelBank.localMap.get(ObjectSet.localChatActionMap.get(player).getValue());
+                    Bank bank = PixelBank.forUniqueId(ObjectSet.localChatActionMap.get(player).getValue());
                     double after = bank.getBalance() - Integer.valueOf(message);
                     bank.setBalance(after < 0 ? 0 : after);
                     player.sendMessage(PixelBank.prefix + "§f存款已设置");
                 } else {
-                    player.sendMessage(PixelBank.prefix + "§c这不是一个纯数字");
+                    player.sendMessage(PixelBank.prefix + PixelConfiguration.getLang("Message.Bank.NotANumber"));
                 }
             }
         });
@@ -118,9 +161,9 @@ public class ListenerOfPlayer implements Listener {
             @Override
             protected void invoke(AsyncPlayerChatEvent paramAsyncPlayerChatEvent) {
                 if (Numeric.isInteger(message)) {
-                    PixelBank.localMap.get(ObjectSet.localChatActionMap.get(player).getValue()).setBalance(Integer.valueOf(message));
+                    PixelBank.forUniqueId(ObjectSet.localChatActionMap.get(player).getValue()).setBalance(Integer.valueOf(message));
                 } else {
-                    player.sendMessage(PixelBank.prefix + "§c这不是一个纯数字");
+                    player.sendMessage(PixelBank.prefix + PixelConfiguration.getLang("Message.Bank.NotANumber"));
                 }
             }
         });
@@ -184,6 +227,7 @@ public class ListenerOfPlayer implements Listener {
                     party.join(player);
                     ObjectSet.localChatActionMap.remove(player);
                     PixelView.removeView(player, "§a开始使用组队");
+                    PixelView.addView(player, "§a玩家信息", PixelRisker.get(player).getView());
                 }
             }
         });
@@ -196,6 +240,7 @@ public class ListenerOfPlayer implements Listener {
                     PixelParty.create(message, player);
                     ObjectSet.localChatActionMap.remove(player);
                     PixelView.removeView(player, "§a开始使用组队");
+                    PixelView.addView(player, "§a玩家信息", PixelRisker.get(player).getView());
                 }
             }
         });
@@ -227,7 +272,17 @@ public class ListenerOfPlayer implements Listener {
             protected void invoke(PlayerInteractEvent paramPlayerInteractEvent) {
                 paramPlayerInteractEvent.setCancelled(true);
                 if (item.hasItemMeta() && "§a任务委托书".equals(item.getItemMeta().getDisplayName())) {
-                    PixelView.addView(player, "§a任务委托", ObjectSet.viewTask);
+                    View view = null;
+                    try {
+                        view = ObjectSet.viewTask.clone();
+                        TaskSnapshot task = PixelTask.taskSnapshotMap.get(player.getUniqueId());
+                        if(task != null){
+                            view.setItem(task.getType() == Type.MAIN_TASK ? 19 : (task.getType() == Type.SIDE_TASK ? 22 : 25), PixelTask.cancelTask);
+                        }
+                    } catch (CloneNotSupportedException ex) {
+                        Logger.getLogger(ListenerOfPlayer.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    PixelView.addView(player, "§a任务委托", view);
                     Homelessness.core.openView(player, "§a任务委托");
                 }
             }
@@ -285,18 +340,15 @@ public class ListenerOfPlayer implements Listener {
             }
             return;
         }
+        String format = PixelConfiguration.option.getString("Chat.format").replace("&", "§");
         if (message.startsWith("!!")) {
-            Bukkit.broadcastMessage("§7[§e全服喊话§7] §f<§a" + player.getName() + "§f> " + message.substring(2));
+            Bukkit.broadcastMessage("§7[§e全服喊话§7] " + format.replaceAll("%player", player.getName()).replaceAll("%message", message.substring(2)));
             return;
         }
         if (message.startsWith("!")) {
             player.getWorld().getPlayers().forEach((paramPlayer) -> {
-                paramPlayer.sendMessage("§7[§a世界喊话§7] §f<§a" + player.getName() + "§f> " + message.substring(1));
+                paramPlayer.sendMessage("§7[§a世界喊话§7] " + format.replaceAll("%player", player.getName()).replaceAll("%message", message.substring(1)));
             });
-            return;
-        }
-        if (message.startsWith("%")) {
-            PixelChatChannel.forPlayer(player).chat(player, message + " §7(外部聊天)");
             return;
         }
         PixelChatChannel.forPlayer(player).chat(player, message);
@@ -309,7 +361,6 @@ public class ListenerOfPlayer implements Listener {
             Map<String, View> map = PixelView.localMenuMap.get(player);
             if(PixelInstanceZone.getZoneByPlayer(player) != null){
                 View view = new PixelView();
-                
             }
             if (!map.containsKey("§a玩家信息") || map.get("§a玩家信息").getUniqueId().equals(player.getUniqueId())) {
                 map.put("§a玩家信息", PixelRisker.localMap.get(player.getUniqueId()).getView());
@@ -321,6 +372,7 @@ public class ListenerOfPlayer implements Listener {
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
+        player.setExp(0);
         if (!PixelRisker.localMap.containsKey(player.getUniqueId())) {
             PixelRisker.localMap.put(player.getUniqueId(), new PixelRisker(player));
         }
@@ -335,6 +387,14 @@ public class ListenerOfPlayer implements Listener {
         if (!b) {
             player.getInventory().addItem(ObjectSet.itemStackTask.clone());
         }
+    }
+    
+    @EventHandler
+    public void onExpChange(PlayerExpChangeEvent event){
+        if(event.getAmount() > 0){
+            PixelRisker.get(event.getPlayer()).experience().addExp(event.getAmount());
+        }
+        event.setAmount(0);
     }
 
     @EventHandler

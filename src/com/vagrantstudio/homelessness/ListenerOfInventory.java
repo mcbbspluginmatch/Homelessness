@@ -12,6 +12,7 @@ import com.vagrantstudio.homelessness.api.ChatChannel;
 import com.vagrantstudio.homelessness.api.Feudal;
 import com.vagrantstudio.homelessness.api.Friends;
 import com.vagrantstudio.homelessness.api.Guild;
+import com.vagrantstudio.homelessness.api.Guild.Grade;
 import com.vagrantstudio.homelessness.api.Party;
 import com.vagrantstudio.homelessness.api.Task;
 import com.vagrantstudio.homelessness.api.View;
@@ -44,10 +45,10 @@ import org.bukkit.inventory.ItemStack;
  * @author Retr0
  */
 public class ListenerOfInventory implements Listener {
-    
+
     protected Map<String, Click> localClickMap = new HashMap();
     protected Map<String, Close> localCloseMap = new HashMap();
-    
+
     protected ListenerOfInventory() {
         localClickMap.put("§a玩家信息", new Click() {
             @Override
@@ -94,7 +95,7 @@ public class ListenerOfInventory implements Listener {
                     case "§a创建一个公会":
                         ObjectSet.localChatActionMap.put(player, new CraftEntry("创建公会", ""));
                         player.closeInventory();
-                        player.sendMessage(PixelGuild.prefix + "§a请输入公会名称 §7(无需带\'/\' 可以带彩色符号&)");
+                        player.sendMessage(PixelGuild.prefix + PixelConfiguration.getLang("Message.Guild.InputGuildName"));
                         break;
                 }
             }
@@ -108,7 +109,7 @@ public class ListenerOfInventory implements Listener {
                     case "§a创建新的频道":
                         ObjectSet.localChatActionMap.put(player, new CraftEntry("创建聊天频道", ""));
                         player.closeInventory();
-                        player.sendMessage(PixelChatChannel.prefix + "§a请输入聊天频道名称 §7(无需带\'/\' 可以带彩色符号&)");
+                        player.sendMessage(PixelChatChannel.prefix + PixelConfiguration.getLang("Message.ChatChannel.InputChannelName"));
                         break;
                     case "§c解散当前频道":
                         if (ccInstance.getOwner() == player) {
@@ -116,7 +117,7 @@ public class ListenerOfInventory implements Listener {
                             Homelessness.core.openView(player, "§a操作确认");
                             ObjectSet.localInvActionMap.put(player, new CraftEntry("解散聊天频道", ccInstance.getUniqueId()));
                         } else {
-                            player.sendMessage(PixelChatChannel.prefix + "§c你不是频道所有者");
+                            player.sendMessage(PixelChatChannel.prefix + PixelConfiguration.getLang("Message.ChatChannel.NotOwner"));
                             player.closeInventory();
                         }
                         break;
@@ -190,6 +191,9 @@ public class ListenerOfInventory implements Listener {
                                 player.sendMessage(PixelParty.prefix + PixelConfiguration.getLang("Message.Party.TargetOffline"));
                             }
                             break;
+                        case "踢出公会成员":
+                            PixelGuild.forPlayer(player).kick(uid);
+                            break;
                     }
                 }
                 PixelView.removeView(player, "§a操作确认");
@@ -205,12 +209,12 @@ public class ListenerOfInventory implements Listener {
                     case "§a存款":
                         player.closeInventory();
                         ObjectSet.localChatActionMap.put(player, new CraftEntry("银行存款", uid));
-                        player.sendMessage(PixelBank.prefix + "§a请输入金额");
+                        player.sendMessage(PixelBank.prefix + PixelConfiguration.getLang("Message.Bank.InputValue"));
                         break;
                     case "§a取款":
                         player.closeInventory();
                         ObjectSet.localChatActionMap.put(player, new CraftEntry("银行取款", uid));
-                        player.sendMessage(PixelBank.prefix + "§a请输入金额");
+                        player.sendMessage(PixelBank.prefix + PixelConfiguration.getLang("Message.Bank.InputValue"));
                         break;
                 }
             }
@@ -231,7 +235,7 @@ public class ListenerOfInventory implements Listener {
                             ObjectSet.localInvActionMap.put(player, new CraftEntry("退出公会", uid));
                         } else {
                             player.closeInventory();
-                            player.sendMessage(PixelGuild.prefix + "§c你是这个公会的所有者，你只能解散该公会而不能退出");
+                            player.sendMessage(PixelGuild.prefix + PixelConfiguration.getLang("Message.Guild.CannotDissolve"));
                         }
                         break;
                     case "§a仓库":
@@ -247,28 +251,22 @@ public class ListenerOfInventory implements Listener {
                         Homelessness.core.openView(player, "§a公会银行");
                         break;
                     case "§a公会选项":
-                        String perm0 = PixelConfiguration.option.getString("Guild.PermissionSet.GuildManager");
-                        if (!guild.hasPermission(player, perm0)) {
-                            player.sendMessage(PixelGuild.prefix + "§c未授权使用 §7(权限为：" + perm0 + ")");
+                        if (guild.getGrade(player) == Grade.MEMBER) {
+                            player.sendMessage(PixelGuild.prefix + PixelConfiguration.getLang("Message.Guild.NoPerm"));
                             player.closeInventory();
                             return;
                         }
-                        View viewOption = new PixelView(guild.getUniqueId());
-                        viewOption.setItem(1, new CraftItemStack(Material.CAKE, "§a升级/扩建").create());
-                        viewOption.setItem(2, ObjectSet.itemStackKickPlayer);
-                        viewOption.setItem(7, PixelGuild.DISSOLVE);
-                        PixelView.addView(player, "§a公会选项", viewOption);
+                        PixelView.addView(player, "§a公会选项", guild.getOptionInterface());
                         Homelessness.core.openView(player, "§a公会选项");
                         break;
                     case "§a公会广播":
-                        String perm1 = PixelConfiguration.option.getString("Guild.PermissionSet.Broadcast");
-                        if (!guild.hasPermission(player, perm1)) {
-                            player.sendMessage(PixelGuild.prefix + "§c未授权使用 §7(权限为：" + perm1 + ")");
+                        if (guild.getGrade(player) == Grade.MEMBER) {
+                            player.sendMessage(PixelGuild.prefix + PixelConfiguration.getLang("Message.Guild.NoPerm"));
                             player.closeInventory();
                             return;
                         }
                         player.closeInventory();
-                        player.sendMessage(PixelGuild.prefix + "§a请在聊天栏内输入要广播的内容");
+                        player.sendMessage(PixelGuild.prefix + PixelConfiguration.getLang("Message.Guild.Broadcast"));
                         ObjectSet.localChatActionMap.put(player, new CraftEntry("公会广播", uid));
                         break;
                     case "§a公会聊天频道":
@@ -283,17 +281,102 @@ public class ListenerOfInventory implements Listener {
                 paramInventoryClickEvent.setCancelled(true);
                 Guild guild = PixelGuild.localGuildMap.get(uid);
                 switch (clickedItemStack.getItemMeta().getDisplayName()) {
+                    case "§a升级公会":
+                        if(guild.upgrade()){
+                            guild.broadcast(PixelConfiguration.getLang("Message.Guild.UpgradeSuccess"));
+                        } else {
+                            player.sendMessage(PixelGuild.prefix + PixelConfiguration.getLang("Message.Guild.UpgradeFailed"));
+                        }
+                        break;
+                    case "§a管理入会申请":
+                        View view = new PixelView();
+                        guild.getApplications().stream().forEach((paramUniqueId) -> {
+                            view.addItem(PixelRisker.localMap.get(paramUniqueId).icon());
+                        });
+                        PixelView.addView(player, "§a入会申请列表", view);
+                        Homelessness.core.openView(player, title);
+                        break;
+                    case "§a管理成员":
+                        View member = new PixelView(uid);
+                        int loop = 0;
+                        for (UUID uniqueId : guild.getPlayers().keySet()) {
+                            if (loop == 27) {
+                                break;
+                            }
+                            member.addItem(PixelRisker.localMap.get(uniqueId).icon());
+                        }
+                        PixelView.addView(player, "§a公会成员管理", member);
+                        Homelessness.core.openView(player, "§a公会成员管理");
+                        break;
+                    case "§a编辑公会宣言":
+                        if (paramInventoryClickEvent.isLeftClick()) {
+                            ObjectSet.localChatActionMap.put(player, new CraftEntry("增加公会宣言", uid));
+                            player.sendMessage(PixelGuild.prefix + PixelConfiguration.getLang("Message.Guild.AddManifesto"));
+                            player.closeInventory();
+                        } else {
+                            List<String> manifesto = guild.getManifesto();
+                            manifesto.remove(manifesto.size() - 1);
+                        }
+                        break;
                     case "§c解散公会":
-                        String perm1 = PixelConfiguration.option.getString("Guild.PermissionSet.Dissolve");
-                        if (guild.hasPermission(player, perm1)) {
+                        if (guild.getGrade(player) == Grade.CAPTAIN) {
                             PixelView.addView(player, "§a操作确认", ObjectSet.viewConfirm);
                             Homelessness.core.openView(player, "§a操作确认");
                             ObjectSet.localInvActionMap.put(player, new CraftEntry("解散公会", uid));
                         } else {
                             player.closeInventory();
-                            player.sendMessage(PixelGuild.prefix + "§c未授权使用 §7(权限为：" + perm1 + ")");
+                            player.sendMessage(PixelGuild.prefix + PixelConfiguration.getLang("Message.Guild.NoPerm"));
                         }
                         break;
+                }
+            }
+        });
+        localClickMap.put("§a入会申请列表", new Click() {
+            @Override
+            protected void invoke(InventoryClickEvent paramInventoryClickEvent) {
+                paramInventoryClickEvent.setCancelled(true);
+                Guild guild = PixelGuild.forPlayer(player);
+                UUID playerId = UUID.fromString(Homelessness.core.getReflection().getTagString(clickedItemStack, "uid"));
+                if (paramInventoryClickEvent.isLeftClick()) {
+                    guild.accpet(playerId);
+                } else {
+                    guild.deny(playerId);
+                }
+            }
+        });
+        localClickMap.put("§a公会成员管理", new Click() {
+            @Override
+            protected void invoke(InventoryClickEvent paramInventoryClickEvent) {
+                paramInventoryClickEvent.setCancelled(true);
+                Guild guild = PixelGuild.forUniqueId(uid);
+                if (paramInventoryClickEvent.getRawSlot() < 45) {
+                    UUID playerId = UUID.fromString(Homelessness.core.getReflection().getTagString(clickedItemStack, "uid"));
+                    if (paramInventoryClickEvent.isLeftClick()) {
+                        OfflinePlayer offlineInstance = Bukkit.getOfflinePlayer(playerId);
+                        Grade grade = guild.getGrade(offlineInstance);
+                        if (grade == Grade.CAPTAIN) {
+                            player.sendMessage(PixelGuild.prefix + PixelConfiguration.getLang("Message.Guild.CannotSetCaptain"));
+                            return;
+                        }
+                        if (grade == Grade.MEMBER) {
+                            guild.setGrade(offlineInstance, Grade.VICE_CAPTAIN);
+                            player.sendMessage(PixelGuild.prefix + PixelConfiguration.getLang("Message.Guild.SetToViceCaptain"));
+                        } else {
+                            guild.setGrade(offlineInstance, Grade.MEMBER);
+                            player.sendMessage(PixelGuild.prefix + PixelConfiguration.getLang("Message.Guild.SetToMember"));
+                        }
+                    } else {
+                        if (guild.getOwner().getUniqueId().equals(playerId)) {
+                            player.sendMessage(PixelGuild.prefix + PixelConfiguration.getLang("Message.Guild.CannotKickOwner"));
+                            player.closeInventory();
+                            return;
+                        }
+                        ObjectSet.localInvActionMap.put(player, new CraftEntry("踢出公会成员", playerId));
+                        PixelView.addView(player, "§a操作确认", ObjectSet.viewConfirm);
+                        Homelessness.core.openView(player, "§a操作确认");
+                    }
+                } else {
+                    
                 }
             }
         });
@@ -310,6 +393,16 @@ public class ListenerOfInventory implements Listener {
             @Override
             protected void invoke(InventoryClickEvent paramInventoryClickEvent) {
                 paramInventoryClickEvent.setCancelled(true);
+                switch(clickedItemStack.getItemMeta().getDisplayName()){
+                    case "§a捐献":
+                        ObjectSet.localChatActionMap.put(player, new CraftEntry<>("公会捐款", null));
+                        player.sendMessage(PixelGuild.prefix + PixelConfiguration.getLang("Message.Bank.InputValue"));
+                        break;
+                    case "§a取款":
+                        ObjectSet.localChatActionMap.put(player, new CraftEntry<>("公会取款", null));
+                        player.sendMessage(PixelGuild.prefix + PixelConfiguration.getLang("Message.Bank.InputValue"));
+                        break;
+                }
             }
         });
         localClickMap.put("§a仓库储集", new Click() {
@@ -321,7 +414,8 @@ public class ListenerOfInventory implements Listener {
                     case "§a点击创建新的仓库":
                         int index = paramInventoryClickEvent.getRawSlot() - 18;
                         wa.set(index, new PixelWare(uid, index));
-                        player.sendMessage("§a创建成功！编号位为 §e" + (PixelWareCollection.allowed.indexOf(paramInventoryClickEvent.getRawSlot() - 18) + 1) + " §a的储存槽现在有了一个空仓库");
+                        player.sendMessage(PixelWareCollection.prefix + PixelConfiguration.getLang("Message.Ware.CreateSuccess").replace("%slot",
+                                String.valueOf(PixelWareCollection.allowed.indexOf(paramInventoryClickEvent.getRawSlot() - 18) + 1)));
                         PixelView.addView(player, "§a仓库储集", wa.getView());
                         Homelessness.core.openView(player, "§a仓库储集");
                         break;
@@ -369,7 +463,7 @@ public class ListenerOfInventory implements Listener {
                     case "§a添加好友":
                         ObjectSet.localChatActionMap.put(player, new CraftEntry("搜索玩家", null));
                         ObjectSet.localInteractActionMap.put(player, new CraftEntry("添加好友", null));
-                        player.sendMessage(PixelFriends.prefix + PixelConfiguration.getLang("Message."));
+                        player.sendMessage(PixelFriends.prefix + PixelConfiguration.getLang("Message.Friends.AddFriend"));
                         player.closeInventory();
                         break;
                     case "§a上一页":
@@ -442,9 +536,9 @@ public class ListenerOfInventory implements Listener {
                 OfflinePlayer offlineInstance = Bukkit.getOfflinePlayer(UUID.fromString(Homelessness.core.getReflection().getTagString(clickedItemStack, "uid")));
                 if (paramInventoryClickEvent.isLeftClick()) {
                     friends.accept(offlineInstance);
-                    player.sendMessage(PixelFriends.prefix + "§a你接受了来自 §7" + offlineInstance.getName() + " §a的好友申请");
+                    player.sendMessage(PixelFriends.prefix + PixelConfiguration.getLang("Message.Friends.AcceptApplication").replace("%name", offlineInstance.getName()));
                     if (offlineInstance.isOnline()) {
-                        offlineInstance.getPlayer().sendMessage(PixelFriends.prefix + "§a玩家 §7" + player.getName() + " §a接受了你的好友申请");
+                        offlineInstance.getPlayer().sendMessage(PixelFriends.prefix + PixelConfiguration.getLang("Message.Friends.PlayerAcceptYourApplication").replace("%name", player.getName()));
                     }
                 } else {
                     friends.deny(offlineInstance);
@@ -470,7 +564,7 @@ public class ListenerOfInventory implements Listener {
                 switch (paramInventoryClickEvent.getRawSlot()) {
                     case 22:
                         player.closeInventory();
-                        player.sendMessage(PixelArea.prefix + "§a请输入领地名称 §7(无需带\'/\' 可以带彩色符号&)");
+                        player.sendMessage(PixelArea.prefix + PixelConfiguration.getLang("Message.Area.InputAreaName"));
                         ObjectSet.localChatActionMap.put(player, new CraftEntry("创建领域-改名", null));
                         break;
                     case 23:
@@ -516,6 +610,10 @@ public class ListenerOfInventory implements Listener {
                 List<ItemStack> taskIcon = new ArrayList();
                 View view = new PixelView();
                 Task.Type type = null;
+                if ("§c放弃任务".equals(clickedItemStack.getItemMeta().getDisplayName())) {
+                    PixelTask.taskSnapshotMap.get(player.getUniqueId()).cancel();
+                    return;
+                }
                 switch (clickedItemStack.getItemMeta().getDisplayName()) {
                     case "§a主线任务":
                         type = Task.Type.MAIN_TASK;
@@ -646,7 +744,7 @@ public class ListenerOfInventory implements Listener {
                 }
             }
         });
-        
+
         localCloseMap.put("§a仓库", new Close() {
             @Override
             protected void invoke(InventoryCloseEvent paramInventoryCloseEvent) {
@@ -659,7 +757,7 @@ public class ListenerOfInventory implements Listener {
             }
         });
     }
-    
+
     @EventHandler
     public void onInventoryClick(InventoryClickEvent paramInventoryClickEvent) {
         Inventory inventory = paramInventoryClickEvent.getInventory();
@@ -674,7 +772,7 @@ public class ListenerOfInventory implements Listener {
         String title = "";
         Player player = (Player) paramInventoryClickEvent.getWhoClicked();
         UUID uid = null;
-        
+
         ItemStack[] itemStackArray = inventory.getStorageContents();
         int i = 0;
         for (ItemStack paramItemStack : itemStackArray) {
@@ -723,7 +821,7 @@ public class ListenerOfInventory implements Listener {
             instance.invoke(paramInventoryClickEvent);
         }
     }
-    
+
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent paramInventoryCloseEvent) {
         Inventory inventory = paramInventoryCloseEvent.getInventory();
@@ -756,16 +854,16 @@ public class ListenerOfInventory implements Listener {
             instance.invoke(paramInventoryCloseEvent);
         }
     }
-    
+
     protected abstract static class Click {
-        
+
         protected Inventory inventory;
         protected ItemStack clickedItemStack;
         protected ItemStack viewItemStack;
         protected Player player;
         protected String title;
         protected UUID uid;
-        
+
         protected void init(InventoryClickEvent paramInventoryClickEvent, ItemStack paramViewItemStack, UUID paramUniqueId) {
             inventory = paramInventoryClickEvent.getInventory();
             player = (Player) paramInventoryClickEvent.getWhoClicked();
@@ -773,26 +871,26 @@ public class ListenerOfInventory implements Listener {
             viewItemStack = paramViewItemStack;
             uid = paramUniqueId;
         }
-        
+
         protected abstract void invoke(InventoryClickEvent paramInventoryClickEvent);
     }
-    
+
     protected abstract static class Close {
-        
+
         protected Inventory inventory;
         protected ItemStack viewItemStack;
         protected Player player;
         protected String title;
         protected UUID uid;
-        
+
         protected void init(InventoryCloseEvent paramInventoryCloseEvent, ItemStack paramViewItemStack, UUID paramUniqueId) {
             inventory = paramInventoryCloseEvent.getInventory();
             player = (Player) paramInventoryCloseEvent.getPlayer();
             viewItemStack = paramViewItemStack;
             uid = paramUniqueId;
         }
-        
+
         protected abstract void invoke(InventoryCloseEvent paramInventoryCloseEvent);
-        
+
     }
 }
