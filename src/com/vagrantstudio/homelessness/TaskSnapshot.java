@@ -29,6 +29,7 @@ import org.bukkit.entity.Player;
  *
  * @author BergStudio
  */
+// 名为 Snapshot 却不是一个 Snapshot 该有的模样 —— 754503921
 public class TaskSnapshot implements Mission {
 
     private List<Entry<Trigger, Set<Actuator>>> taskList = new ArrayList();

@@ -78,6 +78,7 @@ public class ListenerOfInventory implements Listener {
                     case "§a组队":
                         Party party = PixelParty.forPlayer(player);
                         PixelView.addView(player, "§a组队", party.getView());
+                        // 不应在一个 InventoryEvent 中开启其他背包 —— 754503921
                         Homelessness.core.openView(player, "§a组队");
                         break;
                 }
@@ -761,6 +762,7 @@ public class ListenerOfInventory implements Listener {
     @EventHandler
     public void onInventoryClick(InventoryClickEvent paramInventoryClickEvent) {
         Inventory inventory = paramInventoryClickEvent.getInventory();
+        // 基于 title 的背包菜单判断，建议更换为 InventoryView 的判断 —— 754503921
         if (inventory == null || !ObjectSet.inventoryTitle.equals(inventory.getTitle())) {
             return;
         }
@@ -860,7 +862,7 @@ public class ListenerOfInventory implements Listener {
         protected Inventory inventory;
         protected ItemStack clickedItemStack;
         protected ItemStack viewItemStack;
-        protected Player player;
+        protected Player player; // 保存玩家引用 —— 754503921
         protected String title;
         protected UUID uid;
 

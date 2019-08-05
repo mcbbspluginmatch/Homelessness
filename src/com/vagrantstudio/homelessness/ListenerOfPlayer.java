@@ -307,6 +307,7 @@ public class ListenerOfPlayer implements Listener {
     @EventHandler
     public void onChat(AsyncPlayerChatEvent event) {
         event.setCancelled(true);
+        // ChatColor.translateAlternativeColorCode —— 754503921
         String message = event.getMessage().replace("&", "§");
         Player player = event.getPlayer();
         if (ObjectSet.localChatActionMap.containsKey(player)) {
@@ -318,7 +319,7 @@ public class ListenerOfPlayer implements Listener {
             }
             Chat ceInstance = localChatMap.get(ObjectSet.localChatActionMap.get(player).getKey());
             ceInstance.init(event);
-            ceInstance.invoke(event);
+            ceInstance.invoke(event); // 异步操作 Bukkit API —— 754503921
             return;
         }
         if (ObjectSet.localPasswordQueue.containsKey(player)) {
@@ -403,6 +404,7 @@ public class ListenerOfPlayer implements Listener {
     }
 
     @EventHandler
+    // 不要把 IDE 自动生成的东西带出来，比如此类命名，比如注释，比如自动生成的代码块 —— 754503921
     public void onMove(PlayerMoveEvent paramPlayerMoveEvent) {
         if (Numeric.compareLocation(paramPlayerMoveEvent.getFrom(), paramPlayerMoveEvent.getTo())) {
             return;

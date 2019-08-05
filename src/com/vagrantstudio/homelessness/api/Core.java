@@ -21,6 +21,7 @@ import org.bukkit.plugin.java.JavaPlugin;
  *
  * @author BergStudio
  */
+// 这一层抽象到底有什么用呢 —— 754503921
 public abstract class Core extends JavaPlugin implements CommandExecutor, Listener{
     
     public abstract TriggerScheduler getEventScheduler();

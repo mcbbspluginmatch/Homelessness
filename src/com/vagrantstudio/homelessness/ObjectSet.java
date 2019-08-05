@@ -23,6 +23,7 @@ import org.bukkit.inventory.ItemStack;
  */
 public class ObjectSet {
 
+    // 保存玩家引用 —— 754503921
     protected static final Map<Player, Map.Entry<String, UUID>> localChatActionMap = new HashMap<>();
     protected static final Map<Player, Map.Entry<String, UUID>> localInvActionMap = new HashMap<>();
     protected static final Map<Player, Map.Entry<String, UUID>> localInteractActionMap = new HashMap<>();

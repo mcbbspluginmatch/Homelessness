@@ -23,6 +23,7 @@ import org.bukkit.inventory.meta.ItemMeta;
  * @since v0.0.2
  * @author BergStudio
  */
+// 不推荐的命名 —— 754503921
 public final class CraftItemStack {
     
     private Material material;

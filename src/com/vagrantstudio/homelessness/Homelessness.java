@@ -66,7 +66,7 @@ public class Homelessness extends Core {
 
     @Override
     public void onEnable() {
-        AsyncCatcher.enabled = false;
+        AsyncCatcher.enabled = false; // 不好！ —— 754503921
         core = this;
         getCommand("homelessness").setExecutor(this);
         getServer().getPluginManager().registerEvents(this, this);
@@ -147,7 +147,7 @@ public class Homelessness extends Core {
         if (paramStringArray.length == 0) {
             paramCommandSender.sendMessage(PixelConfiguration.lang.getStringList("CommandHelp").toArray(new String[]{}));
         } else {
-            Player player = (Player) paramCommandSender;
+            Player player = (Player) paramCommandSender; // 未进行异常处理
             switch (paramStringArray[0].toLowerCase()) {
                 case "removearea":
                     if(paramStringArray.length != 2) return false;

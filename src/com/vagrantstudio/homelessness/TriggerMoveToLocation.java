@@ -52,7 +52,7 @@ public class TriggerMoveToLocation extends Trigger{
     @Override
     public void call(Event event) {
         PlayerMoveEvent e = (PlayerMoveEvent)event;
-        if(Numeric.compareLocation(location, e.getTo())){
+        if(Numeric.compareLocation(location, e.getTo())){ // 未判断世界相同 —— 754503921
             mission.trigger(this);
             Bukkit.getScheduler().cancelTask(taskId);
             unregister();
