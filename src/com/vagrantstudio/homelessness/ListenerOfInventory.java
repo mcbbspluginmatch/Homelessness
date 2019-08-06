@@ -762,7 +762,7 @@ public class ListenerOfInventory implements Listener {
     @EventHandler
     public void onInventoryClick(InventoryClickEvent paramInventoryClickEvent) {
         Inventory inventory = paramInventoryClickEvent.getInventory();
-        // 基于 title 的背包菜单判断，建议更换为 InventoryView 的判断 —— 754503921
+        // 基于 title 的背包菜单判断，建议更换为 InventoryHolder 的判断 —— 754503921
         if (inventory == null || !ObjectSet.inventoryTitle.equals(inventory.getTitle())) {
             return;
         }
