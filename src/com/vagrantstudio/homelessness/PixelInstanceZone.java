@@ -470,6 +470,7 @@ public class PixelInstanceZone implements InstanceZone {
                             }
                         }.start();
                     } else {
+                        // 意义何在？
                         new Thread() {
                             @Override
                             public void run() {
