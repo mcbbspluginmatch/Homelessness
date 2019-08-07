@@ -461,6 +461,7 @@ public class PixelInstanceZone implements InstanceZone {
                         new Thread() {
                             @Override
                             public void run() {
+                                // 没有任何同步的t.register（见Trigger Scheduler）——CustomStuff
                                 try {
                                     Thread.sleep(4000);
                                     t.register();
@@ -470,7 +471,7 @@ public class PixelInstanceZone implements InstanceZone {
                             }
                         }.start();
                     } else {
-                        // 意义何在？
+                        // 意义何在？——
                         new Thread() {
                             @Override
                             public void run() {
